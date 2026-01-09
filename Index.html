@@ -3,45 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator HPP & Export Gambar</title>
+    <title>Kalkulator HPP Minuman Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root { --primary: #27ae60; --blue: #3182ce; --dark: #2d3748; --light: #f7fafc; }
+        body { font-family: 'Inter', system-ui, sans-serif; background-color: #f1f5f9; padding: 10px; margin: 0; }
+        .container { max-width: 1100px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: auto; }
         
-        body { font-family: 'Inter', system-ui, sans-serif; background-color: #f1f5f9; padding: 10px; margin: 0; color: var(--dark); }
-        .container { max-width: 1000px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: auto; }
-        
-        h2 { font-size: 1.25rem; margin-bottom: 20px; border-left: 5px solid var(--blue); padding-left: 12px; }
+        h2 { font-size: 1.25rem; border-left: 5px solid var(--blue); padding-left: 12px; margin-bottom: 20px; }
 
-        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 8px; }
-        
-        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        .table-responsive { width: 100%; overflow-x: auto; margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; min-width: 950px; }
         th { background: var(--light); text-align: left; padding: 12px; font-size: 12px; color: #64748b; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 12px 8px; border-bottom: 1px solid #e2e8f0; }
+        td { padding: 10px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
         
         input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-
+        
         .btn { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-add { background: var(--blue); color: white; width: 100%; margin-bottom: 20px; }
-        .btn-calc { background: var(--primary); color: white; width: 100%; font-size: 16px; height: 45px; }
+        .btn-add { background: var(--blue); color: white; margin-bottom: 20px; }
+        .btn-calc { background: var(--primary); color: white; width: 100%; font-size: 16px; height: 50px; }
         .btn-export { background: #e67e22; color: white; margin-top: 15px; width: 100%; display: none; }
-        .btn-del { background: #fee2e2; color: #dc2626; padding: 8px 12px; font-weight: bold; }
+        .btn-del { background: #fee2e2; color: #dc2626; font-weight: bold; width: 40px; }
 
-        .hint { font-size: 10px; color: #94a3b8; margin-top: 5px; display: block; line-height: 1.2; }
-
+        .hint { font-size: 10px; color: #94a3b8; margin-top: 4px; display: block; }
         .config-grid { display: grid; grid-template-columns: 1fr; gap: 15px; background: var(--light); padding: 20px; border-radius: 10px; margin-bottom: 20px; align-items: end; }
-        .label-sm { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 8px; display: block; }
-
-        /* Area yang akan di-export (image_f291be.png style) */
+        
+        /* Export Area Styling sesuai image_f291be.png */
         #exportArea { background: #f0fff4; border: 2px solid #c6f6d5; padding: 25px; border-radius: 12px; margin-top: 20px; display: none; }
         .summary-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         .summary-left { border-bottom: 1px dashed #c6f6d5; padding-bottom: 20px; }
-        .price-big { font-size: 36px; font-weight: 800; color: var(--primary); margin: 5px 0; }
+        .price-big { font-size: 42px; font-weight: 800; color: var(--primary); margin: 5px 0; }
+        .label-sm { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 8px; display: block; }
 
         @media (min-width: 768px) {
             body { padding: 40px 20px; }
             .container { padding: 30px; }
-            .config-grid { grid-template-columns: 1fr 1fr; }
+            .config-grid { grid-template-columns: 1.5fr 1fr; }
             .summary-grid { grid-template-columns: 1.2fr 1fr; }
             .summary-left { border-bottom: none; border-right: 1px solid #c6f6d5; padding-bottom: 0; padding-right: 25px; }
             .btn-add, .btn-export { width: auto; }
@@ -57,26 +54,34 @@
         <table id="ingredientTable">
             <thead>
                 <tr>
-                    <th style="min-width: 180px;">Item Bahan</th>
-                    <th style="min-width: 140px;">Satuan Beli</th>
-                    <th style="min-width: 160px;">Harga Beli (Rp)</th>
+                    <th style="min-width: 200px;">Item Bahan</th>
+                    <th style="min-width: 120px;">Satuan Beli</th>
+                    <th style="min-width: 100px;">Isi/Volume</th>
+                    <th style="min-width: 150px;">Harga Beli (Rp)</th>
                     <th style="min-width: 120px;">Jumlah Pakai</th>
-                    <th style="min-width: 140px;">Subtotal</th>
+                    <th style="min-width: 130px;">Subtotal</th>
                     <th style="min-width: 50px;"></th>
                 </tr>
             </thead>
             <tbody id="tableBody">
                 <tr>
-                    <td><input type="text" class="item-name" placeholder="Contoh: Kopi"></td>
+                    <td><input type="text" class="item-name" placeholder="Contoh: Susu UHT"></td>
                     <td>
-                        <select class="item-unit" onchange="updateHint(this); calcSubtotal(this)">
-                            <option value="1000">Liter (Lt)</option>
-                            <option value="1000">Kilogram (Kg)</option>
-                            <option value="1">Biji / Pcs</option>
+                        <select class="item-unit-type" onchange="updateHint(this); calcSubtotal(this)">
+                            <option value="ml">Liter (Lt)</option>
+                            <option value="gr">Kilogram (Kg)</option>
+                            <option value="pcs">Biji / Pcs</option>
                         </select>
                     </td>
-                    <td><input type="number" class="item-price" oninput="calcSubtotal(this)"><span class="hint">Harga per Satuan Beli</span></td>
-                    <td><input type="number" class="item-qty" oninput="calcSubtotal(this)"><span class="hint">Jumlah gr/ml/biji</span></td>
+                    <td>
+                        <input type="number" class="item-unit-val" value="1000" oninput="calcSubtotal(this)">
+                        <span class="hint" id="unitHint">Isi (ml)</span>
+                    </td>
+                    <td><input type="number" class="item-price" placeholder="18000" oninput="calcSubtotal(this)"></td>
+                    <td>
+                        <input type="number" class="item-qty" placeholder="200" oninput="calcSubtotal(this)">
+                        <span class="hint" id="qtyHint">Dlm ml</span>
+                    </td>
                     <td><input type="text" class="item-sub" value="Rp 0" readonly style="background:#f1f5f9; font-weight: bold;"></td>
                     <td><button class="btn btn-del" onclick="removeRow(this)">×</button></td>
                 </tr>
@@ -87,16 +92,25 @@
     <button class="btn btn-add" onclick="addRow()">+ TAMBAH ITEM BAHAN</button>
 
     <div class="config-grid">
-        <div>
-            <label class="label-sm">TARGET MARGIN KEUNTUNGAN (%)</label>
-            <input type="number" id="inMargin" value="30">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+                <label class="label-sm">NAMA MENU / PRODUK</label>
+                <input type="text" id="inMenuName" placeholder="Contoh: Es Kopi Susu">
+            </div>
+            <div>
+                <label class="label-sm">MARGIN KEUNTUNGAN (%)</label>
+                <input type="number" id="inMargin" value="30">
+            </div>
         </div>
         <div>
-            <button class="btn btn-calc" onclick="calculateHPP()">HITUNG SEKARANG</button>
+            <button class="btn btn-calc" onclick="calculateHPP()">HITUNG & SIMPAN</button>
         </div>
     </div>
 
     <div id="exportArea">
+        <div style="margin-bottom: 20px; border-bottom: 2px solid #c6f6d5; padding-bottom: 10px;">
+            <h3 id="resMenuTitle" style="margin:0; color: var(--dark);">RINGKASAN HPP</h3>
+        </div>
         <div class="summary-grid">
             <div class="summary-left">
                 <span class="label-sm">RINCIAN KOMPOSISI:</span>
@@ -109,32 +123,51 @@
             <div style="text-align: center;">
                 <span class="label-sm">HPP PER PORSI</span>
                 <div class="price-big" id="resHppFinal">Rp 0</div>
-                <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #c6f6d5;">
                     <span class="label-sm">SARAN HARGA JUAL</span>
-                    <div id="resSaranJual" style="font-size: 26px; font-weight: 800; color: #1e293b;">Rp 0</div>
-                    <span class="hint" style="margin-top:5px">(Margin: <span id="resMarginVal">40</span>%)</span>
+                    <div id="resSaranJual" style="font-size: 28px; font-weight: 800; color: #1e293b;">Rp 0</div>
+                    <span class="hint" style="margin-top:5px; font-weight: bold;">Margin Keuntungan: <span id="resMarginVal">40</span>%</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <button class="btn btn-export" id="btnExport" onclick="downloadImage()">💾 SIMPAN SEBAGAI GAMBAR</button>
+    <button class="btn btn-export" id="btnExport" onclick="downloadImage()">💾 SIMPAN GAMBAR UNTUK WHATSAPP</button>
 </div>
 
 <script>
-    // Fungsi Update Hint & Subtotal tetap sama
-    function updateHint(selectEl) {
-        const row = selectEl.parentElement.parentElement;
-        const hints = row.querySelectorAll('.hint');
-        const val = selectEl.options[selectEl.selectedIndex].text;
-        if (val.includes("Biji")) { hints[0].innerText = "Harga per Biji"; hints[1].innerText = "Jumlah biji"; } 
-        else if (val.includes("Liter")) { hints[0].innerText = "Harga per Liter"; hints[1].innerText = "Dalam ml"; } 
-        else { hints[0].innerText = "Harga per Kg"; hints[1].innerText = "Dalam gr"; }
+    function updateHint(el) {
+        const row = el.parentElement.parentElement;
+        const type = el.value;
+        const unitHint = row.querySelector('#unitHint');
+        const qtyHint = row.querySelector('#qtyHint');
+        const unitInput = row.querySelector('.item-unit-val');
+
+        if (type === 'ml') {
+            unitHint.innerText = "Isi (ml)";
+            qtyHint.innerText = "Dlm ml";
+            if(unitInput.value == "1" || unitInput.value == "") unitInput.value = "1000";
+        } else if (type === 'gr') {
+            unitHint.innerText = "Isi (gr)";
+            qtyHint.innerText = "Dlm gr";
+            if(unitInput.value == "1" || unitInput.value == "") unitInput.value = "1000";
+        } else {
+            unitHint.innerText = "Isi (pcs)";
+            qtyHint.innerText = "Dlm pcs";
+            unitInput.value = "1";
+        }
     }
 
     function addRow() {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td><input type="text" class="item-name"></td><td><select class="item-unit" onchange="updateHint(this); calcSubtotal(this)"><option value="1000">Liter (Lt)</option><option value="1000">Kilogram (Kg)</option><option value="1">Biji / Pcs</option></select></td><td><input type="number" class="item-price" oninput="calcSubtotal(this)"><span class="hint">Harga per Liter</span></td><td><input type="number" class="item-qty" oninput="calcSubtotal(this)"><span class="hint">Dalam ml</span></td><td><input type="text" class="item-sub" value="Rp 0" readonly style="background:#f1f5f9; font-weight: bold;"></td><td><button class="btn btn-del" onclick="removeRow(this)">×</button></td>`;
+        tr.innerHTML = `
+            <td><input type="text" class="item-name"></td>
+            <td><select class="item-unit-type" onchange="updateHint(this); calcSubtotal(this)"><option value="ml">Liter (Lt)</option><option value="gr">Kilogram (Kg)</option><option value="pcs">Biji / Pcs</option></select></td>
+            <td><input type="number" class="item-unit-val" value="1000" oninput="calcSubtotal(this)"><span class="hint" id="unitHint">Isi (ml)</span></td>
+            <td><input type="number" class="item-price" oninput="calcSubtotal(this)"></td>
+            <td><input type="number" class="item-qty" oninput="calcSubtotal(this)"><span class="hint" id="qtyHint">Dlm ml</span></td>
+            <td><input type="text" class="item-sub" value="Rp 0" readonly style="background:#f1f5f9; font-weight: bold;"></td>
+            <td><button class="btn btn-del" onclick="removeRow(this)">×</button></td>`;
         document.getElementById('tableBody').appendChild(tr);
     }
 
@@ -142,7 +175,7 @@
 
     function calcSubtotal(el) {
         const row = el.parentElement.parentElement;
-        const divisor = parseFloat(row.querySelector('.item-unit').value) || 1;
+        const divisor = parseFloat(row.querySelector('.item-unit-val').value) || 1;
         const price = parseFloat(row.querySelector('.item-price').value) || 0;
         const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
         const sub = (price / divisor) * qty;
@@ -152,35 +185,39 @@
     function calculateHPP() {
         const rows = document.querySelectorAll('#tableBody tr');
         const margin = parseFloat(document.getElementById('inMargin').value) || 0;
+        const menuName = document.getElementById('inMenuName').value || "RINGKASAN HPP";
         let totalHpp = 0; let detailHtml = '';
+
         rows.forEach(row => {
             const name = row.querySelector('.item-name').value || 'Bahan';
-            const divisor = parseFloat(row.querySelector('.item-unit').value);
+            const divisor = parseFloat(row.querySelector('.item-unit-val').value) || 1;
             const price = parseFloat(row.querySelector('.item-price').value) || 0;
             const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+            const unitLabel = row.querySelector('.item-unit-type').value;
             const sub = (price / divisor) * qty;
+            
             if(sub > 0) {
                 totalHpp += sub;
-                detailHtml += `<div style="display:flex; justify-content:space-between;"><span>${name}</span><span>Rp ${Math.round(sub).toLocaleString('id-ID')}</span></div>`;
+                detailHtml += `<div style="display:flex; justify-content:space-between;"><span>${name} (${qty}${unitLabel})</span><span>Rp ${Math.round(sub).toLocaleString('id-ID')}</span></div>`;
             }
         });
+
         const saranJual = totalHpp / (1 - (margin / 100));
         document.getElementById('exportArea').style.display = 'block';
         document.getElementById('btnExport').style.display = 'inline-flex';
+        document.getElementById('resMenuTitle').innerText = "RINGKASAN HPP: " + menuName.toUpperCase();
         document.getElementById('resDetailList').innerHTML = detailHtml;
         document.getElementById('resTotalAll').innerText = 'Rp ' + Math.round(totalHpp).toLocaleString('id-ID');
         document.getElementById('resHppFinal').innerText = 'Rp ' + Math.round(totalHpp).toLocaleString('id-ID');
         document.getElementById('resSaranJual').innerText = 'Rp ' + Math.ceil(saranJual).toLocaleString('id-ID');
         document.getElementById('resMarginVal').innerText = margin;
-        window.scrollTo(0, document.body.scrollHeight);
     }
 
-    // Fungsi Utama Export Gambar
     function downloadImage() {
         const target = document.getElementById('exportArea');
-        html2canvas(target, { backgroundColor: "#f1f5f9" }).then(canvas => {
+        html2canvas(target, { backgroundColor: "#f1f5f9", scale: 2 }).then(canvas => {
             const link = document.createElement('a');
-            link.download = 'Ringkasan-HPP-Minuman.png';
+            link.download = 'HPP-' + (document.getElementById('inMenuName').value || 'Menu') + '.png';
             link.href = canvas.toDataURL("image/png");
             link.click();
         });
