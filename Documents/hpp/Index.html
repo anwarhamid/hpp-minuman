@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator HPP Minuman Lengkap</title>
+    <style>
+        :root { --primary: #27ae60; --blue: #3182ce; --dark: #2d3748; --light: #f7fafc; }
+        body { font-family: 'Inter', system-ui, sans-serif; background-color: #edf2f7; padding: 20px; color: var(--dark); }
+        .container { max-width: 1000px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: auto; }
+        
+        h2 { margin-bottom: 25px; font-weight: 800; border-left: 5px solid var(--blue); padding-left: 15px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background: var(--light); text-align: left; padding: 12px; font-size: 13px; color: #718096; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 12px 8px; border-bottom: 1px solid #e2e8f0; }
+        
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; font-size: 14px; transition: 0.2s; }
+        input:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1); }
+
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-add { background: var(--blue); color: white; margin-bottom: 20px; }
+        .btn-calc { background: var(--primary); color: white; width: 100%; font-size: 16px; margin-top: 15px; justify-content: center; }
+        .btn-del { background: #feb2b2; color: #c53030; font-weight: bold; }
+        .btn-del:hover { background: #fc8181; }
+        
+        .hint { font-size: 11px; color: #a0aec0; margin-top: 5px; display: block; line-height: 1.2; }
+        
+        /* Summary Style (image_f1434c.jpg) */
+        .summary-card { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 30px; 
+            background: #f0fff4; border: 1px solid #c6f6d5; 
+            padding: 25px; border-radius: 12px; margin-top: 30px; display: none;
+        }
+        .summary-left { border-right: 1px solid #c6f6d5; padding-right: 25px; }
+        .price-big { font-size: 40px; font-weight: 800; color: var(--primary); margin: 10px 0; }
+        .label-sm { font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: 0.05em; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Input Biaya Bahan Baku Minuman</h2>
+    
+    <table id="ingredientTable">
+        <thead>
+            <tr>
+                <th width="25%">Item Bahan</th>
+                <th width="18%">Satuan Beli</th>
+                <th width="20%">Harga Beli (Rp)</th>
+                <th width="15%">Jumlah Pakai</th>
+                <th width="18%">Subtotal</th>
+                <th width="4%"></th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <tr>
+                <td><input type="text" class="item-name" placeholder="Contoh: Cup 16oz"></td>
+                <td>
+                    <select class="item-unit" onchange="updateHint(this); calcSubtotal(this)">
+                        <option value="1">Biji / Pcs</option>
+                        <option value="1000">Liter (ml)</option>
+                        <option value="1000">Kilogram (gr)</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="number" class="item-price" oninput="calcSubtotal(this)" placeholder="500">
+                    <span class="hint">Harga per Biji</span>
+                </td>
+                <td>
+                    <input type="number" class="item-qty" oninput="calcSubtotal(this)" placeholder="1">
+                    <span class="hint">Jumlah biji</span>
+                </td>
+                <td><input type="text" class="item-sub" value="Rp 0" readonly style="background:#edf2f7; font-weight: bold;"></td>
+                <td><button class="btn btn-del" onclick="removeRow(this)">×</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <button class="btn btn-add" onclick="addRow()">+ Tambah Item Bahan</button>
+
+    <div style="background: var(--light); padding: 20px; border-radius: 10px; display: flex; gap: 20px;">
+        <div style="flex: 1;">
+            <label class="label-sm">Target Margin Keuntungan (%)</label>
+            <input type="number" id="inTarget" value="35" style="margin-top: 8px;">
+        </div>
+        <div style="flex: 2; display: flex; align-items: flex-end;">
+            <button class="btn btn-calc" onclick="calculateHPP()">Lihat Ringkasan Perhitungan</button>
+        </div>
+    </div>
+
+    <div id="summary" class="summary-card">
+        <div class="summary-left">
+            <div class="label-sm">Total Biaya Bahan Baku</div>
+            <div id="resDetailList" style="margin: 15px 0; font-size: 14px; line-height: 1.8;"></div>
+            <div style="border-top: 2px dashed #c6f6d5; padding-top: 10px; font-weight: 800; font-size: 18px; display: flex; justify-content: space-between;">
+                <span>TOTAL:</span>
+                <span id="resTotalAll">Rp 0</span>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <div class="label-sm">HPP PER CUP / PORSI</div>
+            <div class="price-big" id="resHppFinal">Rp 0</div>
+            <hr style="border: 0; border-top: 1px solid #c6f6d5; margin: 20px 0;">
+            <div class="label-sm">Saran Harga Jual</div>
+            <div id="resSaranJual" style="font-size: 24px; font-weight: 800; color: var(--dark); margin-top: 5px;">Rp 0</div>
+            <div style="font-size: 11px; color: #718096; margin-top: 5px;">(Berdasarkan Food Cost <span id="resTargetVal">35</span>%)</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateHint(selectEl) {
+        const row = selectEl.parentElement.parentElement;
+        const hints = row.querySelectorAll('.hint');
+        const val = selectEl.value;
+        const text = selectEl.options[selectEl.selectedIndex].text;
+
+        if (val === "1") {
+            hints[0].innerText = "Harga per Biji";
+            hints[1].innerText = "Jumlah biji";
+        } else if (text.includes("Liter")) {
+            hints[0].innerText = "Harga per Liter";
+            hints[1].innerText = "Dalam ml";
+        } else {
+            hints[0].innerText = "Harga per Kg";
+            hints[1].innerText = "Dalam gr";
+        }
+    }
+
+    function addRow() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input type="text" class="item-name"></td>
+            <td>
+                <select class="item-unit" onchange="updateHint(this); calcSubtotal(this)">
+                    <option value="1">Biji / Pcs</option>
+                    <option value="1000">Liter (ml)</option>
+                    <option value="1000">Kilogram (gr)</option>
+                </select>
+            </td>
+            <td><input type="number" class="item-price" oninput="calcSubtotal(this)"><span class="hint">Harga per Biji</span></td>
+            <td><input type="number" class="item-qty" oninput="calcSubtotal(this)"><span class="hint">Jumlah biji</span></td>
+            <td><input type="text" class="item-sub" value="Rp 0" readonly style="background:#edf2f7; font-weight: bold;"></td>
+            <td><button class="btn btn-del" onclick="removeRow(this)">×</button></td>
+        `;
+        document.getElementById('tableBody').appendChild(tr);
+    }
+
+    function removeRow(btn) { btn.parentElement.parentElement.remove(); }
+
+    function calcSubtotal(el) {
+        const row = el.parentElement.parentElement;
+        const divisor = parseFloat(row.querySelector('.item-unit').value) || 1;
+        const price = parseFloat(row.querySelector('.item-price').value) || 0;
+        const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+        
+        const sub = (price / divisor) * qty;
+        row.querySelector('.item-sub').value = 'Rp ' + Math.round(sub).toLocaleString('id-ID');
+    }
+
+    function calculateHPP() {
+        const rows = document.querySelectorAll('#tableBody tr');
+        const target = parseFloat(document.getElementById('inTarget').value) || 35;
+        let totalHpp = 0;
+        let detailHtml = '';
+
+        rows.forEach(row => {
+            const name = row.querySelector('.item-name').value || 'Bahan';
+            const divisor = parseFloat(row.querySelector('.item-unit').value);
+            const price = parseFloat(row.querySelector('.item-price').value) || 0;
+            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+            const sub = (price / divisor) * qty;
+            
+            if(sub > 0) {
+                totalHpp += sub;
+                detailHtml += `<div style="display:flex; justify-content:space-between;">
+                    <span>${name}</span>
+                    <span>Rp ${Math.round(sub).toLocaleString('id-ID')}</span>
+                </div>`;
+            }
+        });
+
+        const saranJual = totalHpp / (target / 100);
+
+        document.getElementById('summary').style.display = 'grid';
+        document.getElementById('resDetailList').innerHTML = detailHtml;
+        document.getElementById('resTotalAll').innerText = 'Rp ' + Math.round(totalHpp).toLocaleString('id-ID');
+        document.getElementById('resHppFinal').innerText = 'Rp ' + Math.round(totalHpp).toLocaleString('id-ID');
+        document.getElementById('resSaranJual').innerText = 'Rp ' + Math.ceil(saranJual).toLocaleString('id-ID');
+        document.getElementById('resTargetVal').innerText = target;
+    }
+</script>
+
+</body>
+</html>
